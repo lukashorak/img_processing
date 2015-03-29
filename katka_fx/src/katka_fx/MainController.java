@@ -3,12 +3,19 @@ package katka_fx;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -33,6 +40,9 @@ public class MainController extends HBox {
 	private Label resultLabel;
 
 	@FXML
+	private Label toleranceLabel;
+
+	@FXML
 	private Button loadButton;
 
 	@FXML
@@ -42,7 +52,13 @@ public class MainController extends HBox {
 	private Slider tolerance;
 
 	@FXML
-	private ColorPicker colorPicker;
+	private ColorPicker colorPickerFill;
+
+	@FXML
+	private ColorPicker colorPickerTarget;
+
+	@FXML
+	private ChoiceBox methodChoice;
 
 	public MainController() {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
@@ -80,7 +96,22 @@ public class MainController extends HBox {
 			}
 		});
 
-		colorPicker.setValue(new Color(1.0, 0.1, 0.1, 1.0));
+		tolerance.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				changeTolerance();
+			}
+		});
+
+		colorPickerFill.setValue(new Color(1.0, 0.1, 0.1, 1.0));
+		colorPickerTarget.setValue(new Color(0.0, 1.0, 0.1, 1.0));
+
+		ObservableList<String> methodList = FXCollections.observableArrayList(
+				"Lower than Treshold", "Higher than Treshold",
+				"Hue within Treshold");
+		methodChoice.setItems(methodList);
+		methodChoice.setValue("Hue within Treshold");
 
 	}
 
@@ -98,15 +129,19 @@ public class MainController extends HBox {
 
 	}
 
-	@FXML
 	protected void changeTolerance() {
-		System.out.println("Change tolerance to:" + this.tolerance.getValue());
-		// this.processImage(this.img, this.tolerance.getValue());
+		this.toleranceLabel.setText(String.format("%.0f%%",
+				this.tolerance.getValue() * 100D));
 	}
 
 	@FXML
 	protected void processPicture() {
-		this.processImage(this.img, this.tolerance.getValue());
+
+		if (this.img != null) {
+			this.processImage(this.img, this.tolerance.getValue());
+		} else {
+			this.resultLabel.setText("No image selected!");
+		}
 	}
 
 	private void processImage(Image image, double value) {
@@ -121,33 +156,61 @@ public class MainController extends HBox {
 
 		for (int readY = 0; readY < image.getHeight(); readY++) {
 			for (int readX = 0; readX < image.getWidth(); readX++) {
-				Color color = pixelReader.getColor(readX, readY);
-				// System.out.println("\nPixel color at coordinates (" + readX
-				// + "," + readY + ") " + color.toString());
-				// System.out.println("R = " + color.getRed());
-				// System.out.println("G = " + color.getGreen());
-				// System.out.println("B = " + color.getBlue());
-				// System.out.println("Opacity = " + color.getOpacity());
-				// System.out.println("Saturation = " + color.getSaturation());
+				Color pixelColor = pixelReader.getColor(readX, readY);
 
 				// Now write a brighter color to the PixelWriter.
-				if (color.getGreen() < this.tolerance.getValue()) {
-					color = colorPicker.getValue();
+				if (this.checkTresholdHSV(pixelColor)) {
+					pixelColor = colorPickerFill.getValue();
 					effected++;
 				}
-				pixelWriter.setColor(readX, readY, color);
+				pixelWriter.setColor(readX, readY, pixelColor);
 
 			}
 		}
+		DecimalFormat df = new DecimalFormat("#.##");
 
 		System.out.println("Total effected : " + effected + " / " + total
-				+ " = " + ((double) effected / (double) total));
+				+ " = " + df.format(((double) effected / (double) total)));
 
-		DecimalFormat df = new DecimalFormat("#.##");
 		resultLabel.setText(df
 				.format((100.0 * (double) effected / (double) total)) + "%");
 		imageView.setImage(wImage);
 	}
-	
-	
+
+	public boolean checkTreshold(Color color) {
+
+		String choiceValue = (String) this.methodChoice.getValue();
+		switch (choiceValue) {
+		case "Lower than Treshold":
+			return this.checkTresholdSmaller(color);
+		case "Higher than Treshold":
+			return this.checkTresholdBigger(color);
+		case "Hue within Treshold":
+			return this.checkTresholdHSV(color);
+		default:
+			return false;
+		}
+	}
+
+	public boolean checkTresholdSmaller(Color color) {
+		double toleranceValue = this.tolerance.getValue();
+		return (color.getGreen() < toleranceValue);
+	}
+
+	public boolean checkTresholdBigger(Color color) {
+		double toleranceValue = this.tolerance.getValue();
+		return (color.getGreen() > toleranceValue);
+	}
+
+	public boolean checkTresholdHSV(Color color) {
+		double toleranceValue = this.tolerance.getValue();
+		double targetHue = this.colorPickerTarget.getValue().getHue();
+
+		double hue = color.getHue();
+
+		boolean is = (Math.abs(targetHue - hue)) < (toleranceValue * 360.0);
+
+		return is;
+	}
+
 }

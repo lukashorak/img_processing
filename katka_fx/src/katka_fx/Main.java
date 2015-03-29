@@ -21,6 +21,8 @@ public class Main extends Application {
 		stage.setTitle("Image analyzer");
 		stage.setWidth(600);
 		stage.setHeight(800);
+		stage.setMinWidth(600);
+		stage.setMinHeight(800);
 		stage.setMaximized(true);
 		stage.show();
 		
