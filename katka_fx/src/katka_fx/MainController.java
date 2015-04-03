@@ -44,12 +44,18 @@ public class MainController extends HBox {
 
 	@FXML
 	private Button loadButton;
+	
+	@FXML
+	private Button saveButton;
 
 	@FXML
 	private ImageView imageView;
 
 	@FXML
 	private Slider tolerance;
+	
+	@FXML
+	private Slider toleranceSaturation;
 
 	@FXML
 	private ColorPicker colorPickerFill;
@@ -106,6 +112,8 @@ public class MainController extends HBox {
 
 		colorPickerFill.setValue(new Color(1.0, 0.1, 0.1, 1.0));
 		colorPickerTarget.setValue(new Color(0.0, 1.0, 0.1, 1.0));
+		colorPickerTarget.getCustomColors().add(new Color(149.0/256,159.0/256.0,55.0/256.0,1.0));
+		colorPickerTarget.getCustomColors().add(new Color(65.0/256,87.0/256.0,22.0/256.0,1.0));
 
 		ObservableList<String> methodList = FXCollections.observableArrayList(
 				"Lower than Treshold", "Higher than Treshold",
@@ -159,7 +167,7 @@ public class MainController extends HBox {
 				Color pixelColor = pixelReader.getColor(readX, readY);
 
 				// Now write a brighter color to the PixelWriter.
-				if (this.checkTresholdHSV(pixelColor)) {
+				if (this.checkTreshold(pixelColor)) {
 					pixelColor = colorPickerFill.getValue();
 					effected++;
 				}
@@ -205,10 +213,13 @@ public class MainController extends HBox {
 	public boolean checkTresholdHSV(Color color) {
 		double toleranceValue = this.tolerance.getValue();
 		double targetHue = this.colorPickerTarget.getValue().getHue();
+		
+		double targetSaturation = 0.50;
 
 		double hue = color.getHue();
+		double saturation = color.getSaturation();
 
-		boolean is = (Math.abs(targetHue - hue)) < (toleranceValue * 360.0);
+		boolean is = (Math.abs(targetHue - hue)) < (toleranceValue * 360.0) && ( saturation > targetSaturation);
 
 		return is;
 	}
