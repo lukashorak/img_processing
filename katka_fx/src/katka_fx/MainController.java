@@ -1,5 +1,10 @@
 package katka_fx;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -25,6 +30,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -34,6 +40,7 @@ public class MainController extends HBox {
 
 	public File file;
 	public Image img;
+	public Image imgAfter;
 
 	@FXML
 	public Label filePath;
@@ -63,10 +70,10 @@ public class MainController extends HBox {
 	private Slider toleranceSaturation;
 
 	@FXML
-	private ColorPicker colorPickerFill;
+	private ColorPicker colorPickerBackground;
 
 	@FXML
-	private ColorPicker colorPickerTarget;
+	private ColorPicker colorPickerSelector;
 
 	@FXML
 	private ChoiceBox<String> methodChoice;
@@ -108,11 +115,11 @@ public class MainController extends HBox {
 			}
 		});
 
-		colorPickerFill.setValue(new Color(1.0, 0.1, 0.1, 1.0));
-		colorPickerTarget.setValue(new Color(0.0, 1.0, 0.1, 1.0));
-		colorPickerTarget.getCustomColors().add(
+		colorPickerBackground.setValue(new Color(1.0, 0.1, 0.1, 1.0));
+		colorPickerSelector.setValue(new Color(0.0, 1.0, 0.1, 1.0));
+		colorPickerSelector.getCustomColors().add(
 				new Color(149.0 / 256, 159.0 / 256.0, 55.0 / 256.0, 1.0));
-		colorPickerTarget.getCustomColors().add(
+		colorPickerSelector.getCustomColors().add(
 				new Color(65.0 / 256, 87.0 / 256.0, 22.0 / 256.0, 1.0));
 
 		ObservableList<String> methodList = FXCollections.observableArrayList(
@@ -284,6 +291,93 @@ public class MainController extends HBox {
 
 		imageView.setImage(wImage);
 	}
+	
+	@FXML void handleButtonResetAction(ActionEvent event){
+		img = new Image(file.toURI().toString());
+		imageView.setImage(img);	
+	}
+	
+	@FXML
+	protected void handleButtonSaveToFileAction(ActionEvent event) {
+		// TODO
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setInitialDirectory(new File("c:/tmp"));
+
+		fileChooser.setInitialFileName("img.png");
+		// Set extension filter
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Image", ".png"));
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JPG Image", ".jpg"));
+
+		// Show open file dialog
+		File saveFile = fileChooser.showSaveDialog(this.getScene().getWindow());
+
+		// Check extensions
+		String extension = "";
+		int i = saveFile.getName().lastIndexOf('.');
+		if (i > 0) {
+			extension = saveFile.getName().substring(i + 1);
+		}
+		if (extension.equals("")) {
+			saveFile = new File(saveFile.getAbsolutePath() + ".png");
+		}
+
+		try {
+			if (extension.toLowerCase().equals("png") || extension.equals("")) {
+				// Save as png
+				ImageIO.write(SwingFXUtils.fromFXImage(this.imgAfter, null), "png", saveFile);
+			} else {
+				// Save as jpeg (first remove alpha channel)
+				BufferedImage bufImageRGB = new BufferedImage((int) this.imgAfter.getWidth(),
+						(int) this.imgAfter.getHeight(), BufferedImage.OPAQUE);
+				SwingFXUtils.fromFXImage(this.imgAfter, null).copyData(bufImageRGB.getRaster());
+				ImageIO.write(bufImageRGB, "jpg", saveFile);
+			}
+		} catch (Exception s) {
+			s.printStackTrace();
+		}
+	}
+
+	@FXML
+	protected void pasteFromClipboard() {
+		ClipboardHelper c = new ClipboardHelper();
+		BufferedImage image = c.getImageFromClipboardContents();
+		if (image != null) {
+			try {
+				this.img = createImage(image);
+				this.imageView.setImage(this.img);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@FXML
+	protected void clickPicture(MouseEvent me) {
+		PixelReader pixelReader = img.getPixelReader();
+		Color color = pixelReader.getColor((int) Math.round(me.getX()), (int) Math.round(me.getY()));
+
+		System.out.println("Click image: " + me.getX() + " " + me.getY() + " --> " + color.toString());
+		colorPickerSelector.setValue(color);
+		colorPickerSelector.fireEvent(new ActionEvent(this.getScene(), colorPickerSelector));
+	}
+	
+	public static javafx.scene.image.Image createImage(java.awt.Image image) throws IOException {
+		if (!(image instanceof RenderedImage)) {
+			BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null),
+					BufferedImage.TYPE_INT_ARGB);
+			Graphics g = bufferedImage.createGraphics();
+			g.drawImage(image, 0, 0, null);
+			g.dispose();
+
+			image = bufferedImage;
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ImageIO.write((RenderedImage) image, "png", out);
+		out.flush();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		return new javafx.scene.image.Image(in);
+	}
+
 
 	private void processImage(Image image, Double tolerance) {
 		PixelReader pixelReader = image.getPixelReader();
@@ -301,7 +395,7 @@ public class MainController extends HBox {
 
 				// Now write a brighter color to the PixelWriter.
 				if (this.checkTreshold(pixelColor)) {
-					pixelColor = colorPickerFill.getValue();
+					pixelColor = colorPickerBackground.getValue();
 					effected++;
 				}
 				pixelWriter.setColor(readX, readY, pixelColor);
@@ -316,6 +410,7 @@ public class MainController extends HBox {
 		resultLabel.setText(df
 				.format((100.0 * (double) effected / (double) total)) + "%");
 		imageView.setImage(wImage);
+		imgAfter = wImage;
 	}
 
 	public void saveImageToFile() {
@@ -324,7 +419,7 @@ public class MainController extends HBox {
 
 	public boolean checkTreshold(Color color) {
 		Double tolerance = this.tolerance.getValue();
-		Double targetHue = this.colorPickerTarget.getValue().getHue();
+		Double targetHue = this.colorPickerSelector.getValue().getHue();
 
 		String choiceValue = (String) this.methodChoice.getValue();
 		switch (choiceValue) {

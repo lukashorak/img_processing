@@ -8,38 +8,41 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 
-<fx:root minHeight="600.0" minWidth="600.0" prefHeight="600.0" prefWidth="600.0" type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root minHeight="800.0" minWidth="800.0" prefHeight="800.0" prefWidth="800.0" type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <children>
     <Pane minWidth="200.0" prefHeight="200.0" prefWidth="200.0">
       <children>
-        <ColorPicker fx:id="colorPickerFill" layoutX="81.0" layoutY="70.0" />
+        <ColorPicker fx:id="colorPickerBackground" layoutX="60.0" layoutY="71.0" />
         <Button layoutX="10.0" layoutY="348.0" mnemonicParsing="false" onAction="#processPicture" prefHeight="31.0" prefWidth="172.0" text="Process" />
         <Slider fx:id="tolerance" disable="false" layoutX="10.0" layoutY="160.0" majorTickUnit="0.1" max="1.0" minorTickCount="0" prefHeight="44.0" prefWidth="172.0" showTickLabels="true" showTickMarks="true" value="0.5" />
         <Label layoutX="10.0" layoutY="130.0" text="Tolerance" />
-        <Button fx:id="loadButton" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" onAction="#openPicture" prefHeight="31.0" prefWidth="172.0" text="Load File" />
+        <Button fx:id="loadButton" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" onAction="#openPicture" prefHeight="31.0" prefWidth="96.0" text="Load File" />
         <Label fx:id="filePath" layoutX="14.0" layoutY="42.0" prefWidth="172.0" text="" />
         <Label layoutX="10.0" layoutY="406.0" text="Result" />
         <Label fx:id="resultLabel" layoutX="66.0" layoutY="406.0" prefHeight="21.0" prefWidth="96.0" text="" />
             <Label layoutX="10.0" layoutY="75.0" text="Fill Color:" />
             <Label fx:id="toleranceLabel" layoutX="135.0" layoutY="130.0" text="50%" />
             <Label layoutX="10.0" layoutY="305.0" text="Target:" />
-            <ColorPicker fx:id="colorPickerTarget" layoutX="80.0" layoutY="300.0" />
+            <ColorPicker fx:id="colorPickerSelector" layoutX="60.0" layoutY="301.0" />
             <ChoiceBox fx:id="methodChoice" layoutX="25.0" layoutY="215.0" prefWidth="150.0" />
             <Button fx:id="saveButton" layoutX="14.0" layoutY="433.0" mnemonicParsing="false" onAction="#openPicture" prefHeight="31.0" prefWidth="172.0" text="Save Result" />
             <Button fx:id="buttonHue" layoutX="16.0" layoutY="484.0" mnemonicParsing="false" onAction="#handleButtonHueAction" text="Hue" />
             <Button fx:id="buttonSaturation" layoutX="61.0" layoutY="484.0" mnemonicParsing="false" onAction="#handleButtonSaturationAction" text="Saturation" />
             <Button fx:id="buttonExp" layoutX="17.0" layoutY="524.0" mnemonicParsing="false" onAction="#handleButtonExpAction" text="Exp" />
             <Button fx:id="buttonBrightness" layoutX="139.0" layoutY="484.0" mnemonicParsing="false" onAction="#handleButtonBrightnessAction" text="Bright" />
+            <Button fx:id="buttonReset" layoutX="124.0" layoutY="17.0" mnemonicParsing="false" onAction="#handleButtonResetAction" text="Reset" />
+            <CheckBox fx:id="checkBoxCombine" layoutX="10.0" layoutY="261.0" mnemonicParsing="false" text="Combine" />
+            <Button fx:id="buttonSaveToFile" layoutX="16.0" layoutY="561.0" mnemonicParsing="false" onAction="#handleButtonSaveToFileAction" text="SaveToFile" />
       </children>
     </Pane>
       <ScrollPane minWidth="400.0" prefHeight="600.0" prefWidth="400.0" style="-fx-background-color: green;" HBox.hgrow="ALWAYS">
-        <content>
-          <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="383.0" prefWidth="264.0">
-               <children>
-              <ImageView fx:id="imageView" fitHeight="400.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-        </content>
+         <content>
+        <ImageView fx:id="imageView" cache="false" fitHeight="0.0" fitWidth="0.0" focusTraversable="false" onMouseClicked="#clickPicture" pickOnBounds="true" preserveRatio="true" smooth="true">
+               <image>
+                  <Image url="@../../../../../../tmp/11089045_10204206722873618_822010662_o%20(1).jpg" />
+               </image>
+            </ImageView>
+         </content>
       </ScrollPane>
   </children>
 </fx:root>
