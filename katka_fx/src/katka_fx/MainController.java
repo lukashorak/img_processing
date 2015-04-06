@@ -34,6 +34,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import katka_fx.ImageProcessor.ImgProcessorResult;
 import katka_fx.ui.EventHandlerLoadImage;
 
 public class MainController extends HBox {
@@ -41,6 +42,7 @@ public class MainController extends HBox {
 	public File file;
 	public Image img;
 	public Image imgAfter;
+	public ImageProcessor imageProcessor = new ImageProcessor();
 
 	@FXML
 	public Label filePath;
@@ -50,6 +52,15 @@ public class MainController extends HBox {
 
 	@FXML
 	private Label toleranceLabel;
+	
+	@FXML
+	private Label tolerance2Label;
+
+	@FXML
+	private Label labelRGB;
+
+	@FXML
+	private Label labelHSV;
 
 	@FXML
 	private Button loadButton;
@@ -67,7 +78,7 @@ public class MainController extends HBox {
 	private Slider tolerance;
 
 	@FXML
-	private Slider toleranceSaturation;
+	private Slider tolerance2;
 
 	@FXML
 	private ColorPicker colorPickerBackground;
@@ -114,6 +125,14 @@ public class MainController extends HBox {
 				changeTolerance();
 			}
 		});
+		
+		tolerance2.valueProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable,
+					Number oldValue, Number newValue) {
+				changeTolerance2();
+			}
+		});
 
 		colorPickerBackground.setValue(new Color(1.0, 0.1, 0.1, 1.0));
 		colorPickerSelector.setValue(new Color(0.0, 1.0, 0.1, 1.0));
@@ -148,6 +167,10 @@ public class MainController extends HBox {
 		this.toleranceLabel.setText(String.format("%.0f%%",
 				this.tolerance.getValue() * 100D));
 	}
+	protected void changeTolerance2() {
+		this.tolerance2Label.setText(String.format("%.0f%%",
+				this.tolerance2.getValue() * 100D));
+	}
 
 	@FXML
 	protected void processPicture() {
@@ -161,152 +184,69 @@ public class MainController extends HBox {
 
 	@FXML
 	private void handleButtonHueAction(ActionEvent event) {
-		Image image = this.img;
-		PixelReader pixelReader = image.getPixelReader();
-
-		// Create WritableImage
-		WritableImage wImage = new WritableImage((int) image.getWidth(),
-				(int) image.getHeight());
-		PixelWriter pixelWriter = wImage.getPixelWriter();
-
-		for (int readY = 0; readY < image.getHeight(); readY++) {
-			for (int readX = 0; readX < image.getWidth(); readX++) {
-				Color pixelColor = pixelReader.getColor(readX, readY);
-
-				Double h = pixelColor.getHue() / 360.0;
-				
-				if (h < 0.11) {
-					h = 0.0;
-				}
-				if (h > 0.25) {
-					h = 1.0;
-				}
-				
-				Double s = pixelColor.getSaturation();
-
-				pixelColor = new Color(h, h, h, 1.0);
-
-				pixelWriter.setColor(readX, readY, pixelColor);
-
-			}
-		}
-
-		imageView.setImage(wImage);
+		this.imgAfter = this.imageProcessor.processHue(this.img);
+		imageView.setImage(this.imgAfter);
 	}
 
 	@FXML
 	private void handleButtonSaturationAction(ActionEvent event) {
-		Image image = this.img;
-		PixelReader pixelReader = image.getPixelReader();
-
-		// Create WritableImage
-		WritableImage wImage = new WritableImage((int) image.getWidth(),
-				(int) image.getHeight());
-		PixelWriter pixelWriter = wImage.getPixelWriter();
-
-		for (int readY = 0; readY < image.getHeight(); readY++) {
-			for (int readX = 0; readX < image.getWidth(); readX++) {
-				Color pixelColor = pixelReader.getColor(readX, readY);
-
-				Double h = pixelColor.getHue() / 360.0;
-				Double s = pixelColor.getSaturation();
-
-				pixelColor = new Color(s, s, s, 1.0);
-
-				pixelWriter.setColor(readX, readY, pixelColor);
-
-			}
-		}
-
-		imageView.setImage(wImage);
+		this.imgAfter = this.imageProcessor.processSaturation(this.img);
+		imageView.setImage(this.imgAfter);
 	}
 
 	@FXML
 	private void handleButtonBrightnessAction(ActionEvent event) {
-		Image image = this.img;
-		PixelReader pixelReader = image.getPixelReader();
-
-		// Create WritableImage
-		WritableImage wImage = new WritableImage((int) image.getWidth(),
-				(int) image.getHeight());
-		PixelWriter pixelWriter = wImage.getPixelWriter();
-
-		for (int readY = 0; readY < image.getHeight(); readY++) {
-			for (int readX = 0; readX < image.getWidth(); readX++) {
-				Color pixelColor = pixelReader.getColor(readX, readY);
-
-				Double h = pixelColor.getHue() / 360.0;
-				Double s = pixelColor.getSaturation();
-				Double b = pixelColor.getBrightness();
-
-				pixelColor = new Color(b, b, b, 1.0);
-
-				pixelWriter.setColor(readX, readY, pixelColor);
-
-			}
-		}
-
-		imageView.setImage(wImage);
+		this.imgAfter = this.imageProcessor.processBrightness(this.img);
+		imageView.setImage(this.imgAfter);
 	}
 
 	@FXML
 	private void handleButtonExpAction(ActionEvent event) {
-		Image image = this.img;
-		PixelReader pixelReader = image.getPixelReader();
-
-		// Create WritableImage
-		WritableImage wImage = new WritableImage((int) image.getWidth(),
-				(int) image.getHeight());
-		PixelWriter pixelWriter = wImage.getPixelWriter();
-
-		for (int readY = 0; readY < image.getHeight(); readY++) {
-			for (int readX = 0; readX < image.getWidth(); readX++) {
-				Color pixelColor = pixelReader.getColor(readX, readY);
-
-				Double h = 0.0;
-				if (30 < pixelColor.getHue() && pixelColor.getHue() < 90) {
-					h = pixelColor.getHue() / 360.0;
-				}
-
-				Double s = 0.0;
-				if (0.7 < pixelColor.getSaturation()) {
-					s = pixelColor.getSaturation();
-				}
-
-				Double b = pixelColor.getBrightness();
-				if (b < 0.2) {
-					b = 0.0;
-				}
-
-				Double v = h * s;
-				if (v > 0)
-					v = 1.0;
-
-				pixelColor = new Color(v, v, v, 1.0);
-
-				pixelWriter.setColor(readX, readY, pixelColor);
-
-			}
-		}
-
-		imageView.setImage(wImage);
+		this.imgAfter = this.imageProcessor.processExp(this.img);
+		imageView.setImage(this.imgAfter);
 	}
-	
-	@FXML void handleButtonResetAction(ActionEvent event){
+
+	@FXML
+	void handleButtonResetAction(ActionEvent event) {
 		img = new Image(file.toURI().toString());
-		imageView.setImage(img);	
+		imageView.setImage(img);
 	}
-	
+
+	@FXML
+	public void handleButtonMagicAction(ActionEvent event) {
+		
+		Double targetHue = this.colorPickerSelector.getValue().getHue();
+		Double tolerance = this.tolerance.getValue();
+		
+		ImgProcessorResult result = this.imageProcessor.processMagic(this.img,
+				 targetHue,tolerance);
+		this.imgAfter = result.image;
+
+		String label = String.format("(%.0f %.2f) %.4f",targetHue, tolerance,
+				result.result);
+		resultLabel.setText(label);
+		imageView.setImage(this.imgAfter);
+
+		// Remove Dark -> BLUE
+		// Hue in 20% +/- Range -> ++
+		// Saturation > 0.5 -> RED
+
+	}
+
 	@FXML
 	protected void handleButtonSaveToFileAction(ActionEvent event) {
 		// TODO
+		imgAfter = imageView.getImage();
+
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setInitialDirectory(new File("c:/tmp"));
 
 		fileChooser.setInitialFileName("img.png");
 		// Set extension filter
-		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Image", ".png"));
-		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JPG Image", ".jpg"));
+		fileChooser.getExtensionFilters().add(
+				new FileChooser.ExtensionFilter("PNG Image", ".png"));
+		fileChooser.getExtensionFilters().add(
+				new FileChooser.ExtensionFilter("JPG Image", ".jpg"));
 
 		// Show open file dialog
 		File saveFile = fileChooser.showSaveDialog(this.getScene().getWindow());
@@ -324,12 +264,15 @@ public class MainController extends HBox {
 		try {
 			if (extension.toLowerCase().equals("png") || extension.equals("")) {
 				// Save as png
-				ImageIO.write(SwingFXUtils.fromFXImage(this.imgAfter, null), "png", saveFile);
+				ImageIO.write(SwingFXUtils.fromFXImage(this.imgAfter, null),
+						"png", saveFile);
 			} else {
 				// Save as jpeg (first remove alpha channel)
-				BufferedImage bufImageRGB = new BufferedImage((int) this.imgAfter.getWidth(),
+				BufferedImage bufImageRGB = new BufferedImage(
+						(int) this.imgAfter.getWidth(),
 						(int) this.imgAfter.getHeight(), BufferedImage.OPAQUE);
-				SwingFXUtils.fromFXImage(this.imgAfter, null).copyData(bufImageRGB.getRaster());
+				SwingFXUtils.fromFXImage(this.imgAfter, null).copyData(
+						bufImageRGB.getRaster());
 				ImageIO.write(bufImageRGB, "jpg", saveFile);
 			}
 		} catch (Exception s) {
@@ -350,20 +293,38 @@ public class MainController extends HBox {
 			}
 		}
 	}
-	
+
 	@FXML
 	protected void clickPicture(MouseEvent me) {
-		PixelReader pixelReader = img.getPixelReader();
-		Color color = pixelReader.getColor((int) Math.round(me.getX()), (int) Math.round(me.getY()));
+		PixelReader pixelReader;
 
-		System.out.println("Click image: " + me.getX() + " " + me.getY() + " --> " + color.toString());
+		if (me.isPrimaryButtonDown()) {
+			pixelReader = this.imageView.getImage().getPixelReader();
+		} else {
+			pixelReader = img.getPixelReader();
+		}
+
+		Color color = pixelReader.getColor((int) Math.round(me.getX()),
+				(int) Math.round(me.getY()));
+
+		System.out.println("Click image: " + me.getX() + " " + me.getY()
+				+ " --> " + color.toString());
 		colorPickerSelector.setValue(color);
-		colorPickerSelector.fireEvent(new ActionEvent(this.getScene(), colorPickerSelector));
+		colorPickerSelector.fireEvent(new ActionEvent(this.getScene(),
+				colorPickerSelector));
+
+		labelRGB.setText(String.format("%.3f %.3f %.3f %.3f", color.getRed(),
+				color.getGreen(), color.getBlue(), color.getOpacity()));
+
+		labelHSV.setText(String.format("%.3f %.3f %.3f", color.getHue(),
+				color.getSaturation(), color.getBrightness()));
 	}
-	
-	public static javafx.scene.image.Image createImage(java.awt.Image image) throws IOException {
+
+	public static javafx.scene.image.Image createImage(java.awt.Image image)
+			throws IOException {
 		if (!(image instanceof RenderedImage)) {
-			BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null),
+			BufferedImage bufferedImage = new BufferedImage(
+					image.getWidth(null), image.getHeight(null),
 					BufferedImage.TYPE_INT_ARGB);
 			Graphics g = bufferedImage.createGraphics();
 			g.drawImage(image, 0, 0, null);
@@ -377,7 +338,6 @@ public class MainController extends HBox {
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		return new javafx.scene.image.Image(in);
 	}
-
 
 	private void processImage(Image image, Double tolerance) {
 		PixelReader pixelReader = image.getPixelReader();
@@ -394,7 +354,10 @@ public class MainController extends HBox {
 				Color pixelColor = pixelReader.getColor(readX, readY);
 
 				// Now write a brighter color to the PixelWriter.
-				if (this.checkTreshold(pixelColor)) {
+				Double targetHue = this.colorPickerSelector.getValue().getHue();
+				String choiceValue = (String) this.methodChoice.getValue();
+				
+				if (imageProcessor.checkTreshold(pixelColor,choiceValue, tolerance, targetHue)) {
 					pixelColor = colorPickerBackground.getValue();
 					effected++;
 				}
@@ -413,46 +376,6 @@ public class MainController extends HBox {
 		imgAfter = wImage;
 	}
 
-	public void saveImageToFile() {
-
-	}
-
-	public boolean checkTreshold(Color color) {
-		Double tolerance = this.tolerance.getValue();
-		Double targetHue = this.colorPickerSelector.getValue().getHue();
-
-		String choiceValue = (String) this.methodChoice.getValue();
-		switch (choiceValue) {
-		case "Lower than Treshold":
-			return this.checkTresholdSmaller(color, tolerance);
-		case "Higher than Treshold":
-			return this.checkTresholdBigger(color, tolerance);
-		case "Hue within Treshold":
-			return this.checkTresholdHSV(color, tolerance, targetHue);
-		default:
-			return false;
-		}
-	}
-
-	public boolean checkTresholdSmaller(Color color, Double tolerance) {
-		return (color.getGreen() < tolerance);
-	}
-
-	public boolean checkTresholdBigger(Color color, Double tolerance) {
-		return (color.getGreen() > tolerance);
-	}
-
-	public boolean checkTresholdHSV(Color color, Double tolerance,
-			Double targetHue) {
-		double targetSaturation = 0.50;
-
-		double hue = color.getHue();
-		double saturation = color.getSaturation();
-
-		boolean is = (Math.abs(targetHue - hue)) < (tolerance * 360.0)
-				&& (saturation > targetSaturation);
-
-		return is;
-	}
+	
 
 }
