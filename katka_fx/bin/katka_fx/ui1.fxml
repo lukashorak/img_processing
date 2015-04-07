@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+
+<fx:root minHeight="800.0" minWidth="800.0" prefHeight="800.0" prefWidth="800.0" type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+    <Pane minWidth="200.0" prefHeight="200.0" prefWidth="200.0">
+      <children>
+        <ColorPicker fx:id="colorPickerBackground" layoutX="60.0" layoutY="71.0" />
+        <Button layoutX="10.0" layoutY="477.0" mnemonicParsing="false" onAction="#processPicture" prefHeight="31.0" prefWidth="172.0" text="Process" />
+        <Slider fx:id="tolerance" disable="false" layoutX="10.0" layoutY="160.0" majorTickUnit="0.1" max="1.0" minorTickCount="0" prefHeight="44.0" prefWidth="180.0" showTickLabels="true" showTickMarks="true" value="0.15" />
+        <Label layoutX="10.0" layoutY="130.0" text="Tolerance" />
+        <Button fx:id="loadButton" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" onAction="#openPicture" prefHeight="31.0" prefWidth="96.0" text="Load File" />
+        <Label fx:id="filePath" layoutX="14.0" layoutY="42.0" prefWidth="172.0" text="" />
+        <Label layoutX="10.0" layoutY="535.0" text="Result" />
+        <Label fx:id="resultLabel" layoutX="66.0" layoutY="535.0" prefHeight="21.0" prefWidth="96.0" text="" />
+            <Label layoutX="10.0" layoutY="75.0" text="Fill Color:" />
+            <Label fx:id="toleranceLabel" layoutX="135.0" layoutY="130.0" text="15%" />
+            <Label layoutX="5.0" layoutY="387.0" text="Target:" />
+            <ColorPicker fx:id="colorPickerSelector" layoutX="55.0" layoutY="383.0" />
+            <ChoiceBox fx:id="methodChoice" layoutX="20.0" layoutY="297.0" prefWidth="150.0" />
+            <Button fx:id="buttonSaveToFile" layoutX="14.0" layoutY="562.0" mnemonicParsing="false" onAction="#handleButtonSaveToFileAction" prefHeight="31.0" prefWidth="172.0" text="Save Result To File" />
+            <Button fx:id="buttonHue" layoutX="16.0" layoutY="613.0" mnemonicParsing="false" onAction="#handleButtonHueAction" text="Hue" />
+            <Button fx:id="buttonSaturation" layoutX="61.0" layoutY="613.0" mnemonicParsing="false" onAction="#handleButtonSaturationAction" text="Saturation" />
+            <Button fx:id="buttonExp" layoutX="17.0" layoutY="653.0" mnemonicParsing="false" onAction="#handleButtonExpAction" text="Exp" />
+            <Button fx:id="buttonBrightness" layoutX="139.0" layoutY="613.0" mnemonicParsing="false" onAction="#handleButtonBrightnessAction" text="Bright" />
+            <Button fx:id="buttonReset" layoutX="124.0" layoutY="17.0" mnemonicParsing="false" onAction="#handleButtonResetAction" text="Reset" />
+            <CheckBox fx:id="checkBoxCombine" layoutX="5.0" layoutY="343.0" mnemonicParsing="false" text="Combine" />
+            <Label layoutX="9.0" layoutY="427.0" text="RGB:" />
+            <Label fx:id="labelRGB" layoutX="49.0" layoutY="427.0" text="..." />
+            <Label layoutX="9.0" layoutY="452.0" text="HSV:" />
+            <Label fx:id="labelHSV" layoutX="49.0" layoutY="452.0" text="..." />
+            <Button fx:id="buttonMagic" layoutX="59.0" layoutY="653.0" mnemonicParsing="false" onAction="#handleButtonMagicAction" text="Magic" />
+            <Slider fx:id="tolerance2" disable="false" layoutX="9.0" layoutY="242.0" majorTickUnit="0.1" max="1.0" minorTickCount="0" prefHeight="44.0" prefWidth="180.0" showTickLabels="true" showTickMarks="true" value="0.5" />
+            <Label layoutX="12.0" layoutY="214.0" text="Treshold2" />
+            <Label fx:id="tolerance2Label" layoutX="132.0" layoutY="214.0" text="50%" />
+      </children>
+    </Pane>
+      <ScrollPane minWidth="400.0" prefHeight="600.0" prefWidth="400.0" style="-fx-background-color: green;" HBox.hgrow="ALWAYS">
+         <content>
+        <ImageView fx:id="imageView" cache="false" fitHeight="0.0" fitWidth="0.0" focusTraversable="false" onMouseClicked="#clickPicture" pickOnBounds="true" preserveRatio="true" smooth="true" />
+         </content>
+      </ScrollPane>
+  </children>
+</fx:root>
