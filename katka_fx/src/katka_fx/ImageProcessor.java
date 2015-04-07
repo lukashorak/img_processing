@@ -11,14 +11,20 @@ public class ImageProcessor {
 	public class ImgProcessorResult {
 		public Image image;
 		public Double result;
+		
+		public Long total;
+		public Long effected;
 
 		public ImgProcessorResult() {
 
 		}
 
-		public ImgProcessorResult(Image image, Double result) {
+		public ImgProcessorResult(Image image,Long total,Long effected, Double result) {
 			this.image = image;
 			this.result = result;
+			this.total = total;
+			this.effected = effected;
+					
 		}
 	}
 
@@ -148,7 +154,7 @@ public class ImageProcessor {
 	}
 
 	public ImgProcessorResult processMagic(Image image, Double targetHue,
-			Double tolerance) {
+			Double tolerance, Double tolerance2) {
 		PixelReader pixelReader = image.getPixelReader();
 
 		// Create WritableImage
@@ -164,7 +170,7 @@ public class ImageProcessor {
 				Color pixelColor = pixelReader.getColor(readX, readY);
 				int action = 0;
 
-				double targetSaturation = 0.30;
+				double targetSaturation = tolerance2;
 				// double targetHue = 67.0;
 				// double tolerance = 25;
 
@@ -206,16 +212,14 @@ public class ImageProcessor {
 			}
 		}
 
-		System.out.println(String.format("Result (%.3f %.3f): %d / %d = %.4f",targetHue, tolerance,
-				effected, total, (double) effected / (double) total));
-
-		ImgProcessorResult result = new ImgProcessorResult(wImage,
+		ImgProcessorResult result = new ImgProcessorResult(wImage, total, effected,
 				((double) effected / (double) total));
 		return result;
 	}
-	
-	public boolean checkTreshold(Color color, String choiceValue, Double tolerance, Double targetHue) {
-		
+
+	public boolean checkTreshold(Color color, String choiceValue,
+			Double tolerance, Double targetHue) {
+
 		switch (choiceValue) {
 		case "Lower than Treshold":
 			return this.checkTresholdSmaller(color, tolerance);

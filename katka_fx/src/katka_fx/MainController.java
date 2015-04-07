@@ -17,7 +17,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -52,7 +51,7 @@ public class MainController extends HBox {
 
 	@FXML
 	private Label toleranceLabel;
-	
+
 	@FXML
 	private Label tolerance2Label;
 
@@ -102,21 +101,9 @@ public class MainController extends HBox {
 		}
 
 		loadButton.setOnAction(new EventHandlerLoadImage(this));
-		saveButton.setOnAction(new EventHandler<ActionEvent>() {
 
-			@Override
-			public void handle(ActionEvent arg0) {
-				Image img = imageView.getImage();
-				File outputfile = new File("c:/tmp/saved.jpg");
-				// ImageIO.write(img, "png", outputfile);
-				try {
-					ImageIO.write(SwingFXUtils.fromFXImage(img, null), "jpg",
-							outputfile);
-				} catch (Exception s) {
-				}
-
-			}
-		});
+		tolerance.setValue(0.15);
+		tolerance2.setValue(0.5);
 
 		tolerance.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
@@ -125,7 +112,7 @@ public class MainController extends HBox {
 				changeTolerance();
 			}
 		});
-		
+
 		tolerance2.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable,
@@ -135,11 +122,15 @@ public class MainController extends HBox {
 		});
 
 		colorPickerBackground.setValue(new Color(1.0, 0.1, 0.1, 1.0));
-		colorPickerSelector.setValue(new Color(0.0, 1.0, 0.1, 1.0));
+		// colorPickerSelector.setValue(new Color(0.0, 1.0, 0.1, 1.0));
 		colorPickerSelector.getCustomColors().add(
 				new Color(149.0 / 256, 159.0 / 256.0, 55.0 / 256.0, 1.0));
 		colorPickerSelector.getCustomColors().add(
 				new Color(65.0 / 256, 87.0 / 256.0, 22.0 / 256.0, 1.0));
+		colorPickerSelector.getCustomColors().add(
+				new Color(0.255, 0.341, 0.016, 1.0));
+
+		colorPickerSelector.setValue(new Color(0.255, 0.341, 0.016, 1.0));
 
 		ObservableList<String> methodList = FXCollections.observableArrayList(
 				"Lower than Treshold", "Higher than Treshold",
@@ -167,6 +158,7 @@ public class MainController extends HBox {
 		this.toleranceLabel.setText(String.format("%.0f%%",
 				this.tolerance.getValue() * 100D));
 	}
+
 	protected void changeTolerance2() {
 		this.tolerance2Label.setText(String.format("%.0f%%",
 				this.tolerance2.getValue() * 100D));
@@ -214,16 +206,24 @@ public class MainController extends HBox {
 
 	@FXML
 	public void handleButtonMagicAction(ActionEvent event) {
-		
+		System.out.print(this.file.getName() + " :");
+
 		Double targetHue = this.colorPickerSelector.getValue().getHue();
 		Double tolerance = this.tolerance.getValue();
-		
+		Double tolerance2 = this.tolerance2.getValue();
+
 		ImgProcessorResult result = this.imageProcessor.processMagic(this.img,
-				 targetHue,tolerance);
+				targetHue, tolerance, tolerance2);
 		this.imgAfter = result.image;
 
-		String label = String.format("(%.0f %.2f) %.4f",targetHue, tolerance,
-				result.result);
+		String out = String.format(
+				"Result (%.3f %.3f %.3f): %d / %d = %.2f%%", targetHue,
+				tolerance, tolerance2, result.effected, result.total,
+				result.result * 100.0);
+
+		String label = String.format("(%.0f %.2f) %.2f%%", targetHue,
+				tolerance, result.result * 100.0);
+		System.out.println(out);
 		resultLabel.setText(label);
 		imageView.setImage(this.imgAfter);
 
@@ -239,14 +239,15 @@ public class MainController extends HBox {
 		imgAfter = imageView.getImage();
 
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setInitialDirectory(new File("c:/tmp"));
+		fileChooser.setInitialDirectory(this.file.getParentFile());
 
-		fileChooser.setInitialFileName("img.png");
+		fileChooser.setInitialFileName(this.file.getName() + "_result");
 		// Set extension filter
-		fileChooser.getExtensionFilters().add(
-				new FileChooser.ExtensionFilter("PNG Image", ".png"));
+
 		fileChooser.getExtensionFilters().add(
 				new FileChooser.ExtensionFilter("JPG Image", ".jpg"));
+		fileChooser.getExtensionFilters().add(
+				new FileChooser.ExtensionFilter("PNG Image", ".png"));
 
 		// Show open file dialog
 		File saveFile = fileChooser.showSaveDialog(this.getScene().getWindow());
@@ -356,8 +357,9 @@ public class MainController extends HBox {
 				// Now write a brighter color to the PixelWriter.
 				Double targetHue = this.colorPickerSelector.getValue().getHue();
 				String choiceValue = (String) this.methodChoice.getValue();
-				
-				if (imageProcessor.checkTreshold(pixelColor,choiceValue, tolerance, targetHue)) {
+
+				if (imageProcessor.checkTreshold(pixelColor, choiceValue,
+						tolerance, targetHue)) {
 					pixelColor = colorPickerBackground.getValue();
 					effected++;
 				}
@@ -375,7 +377,5 @@ public class MainController extends HBox {
 		imageView.setImage(wImage);
 		imgAfter = wImage;
 	}
-
-	
 
 }
